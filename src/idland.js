@@ -17,16 +17,27 @@ const makeRect = (x,y,w,h) => {
 const sketch = (p) => {
 
     let map, maplast
+    let myFont
+
+    p.preload = () => {
+        myFont = p.loadFont('assets/input_mono_regular.ttf');
+    }
 
     p.setup = () => {
         
         p.createCanvas(p.windowWidth, p.windowHeight)
         // p.createCanvas(512, 512)
+        // p.pixelDensity(2.0)
+        
+        p.textFont(myFont)
+        p.textStyle(p.NORMAL)
+        p.textSize(6)
+
         p.background(0)
 
         p.angleMode(p.DEGREES)
         p.ellipseMode(p.CENTER)
-        p.textSize(8)
+        
 
         map = generateMap(256,256)
 
@@ -38,6 +49,14 @@ const sketch = (p) => {
             R.map(pt => p.vertex(pt.x,pt.y), newPath)
         p.endShape(p.CLOSE)
     }
+
+    p.drawIsoCurve = path => {
+        newPath = isoFrom2DArray(path)
+        p.beginShape()
+            R.map(pt => p.curveVertex(pt.x,pt.y), newPath)
+        p.endShape(p.CLOSE)
+    }
+
 
     p.draw = () => {
 
@@ -63,23 +82,32 @@ const sketch = (p) => {
                 const a = edge.v0.point
                 const b = edge.v1.point
                 p.line(a.x,a.y,b.x,b.y)
-                if(edge.midpoint){
-                    p.text(edge.index,edge.midpoint.x,edge.midpoint.y)
-                }
-            }, coastEdges)
+            }, map.coastEdges)
+
+            p.noStroke()
+            p.fill(100)
+
+            R.map(edge => {
+                const a = edge.v0.point
+                const b = edge.v1.point
+                p.text(edge.v0.index,edge.v0.point.x,edge.v0.point.y)
+                p.text(edge.v1.index,edge.v1.point.x,edge.v1.point.y)
+                // if(edge.midpoint){
+                //     p.text(edge.index,edge.midpoint.x,edge.midpoint.y)
+                // }
+            }, map.coastEdges)
 
         // ISOMETRIC
 
             p.push()
             p.translate(p.windowWidth*0.5-0,p.windowHeight*0.5-128)
 
-                p.stroke(255)
+                p.noFill()
 
-                mapIndexed((edge,idx) => {
-                    const a = isoFrom2D(edge.v0.point)
-                    const b = isoFrom2D(edge.v1.point)
-                    p.line(a.x,a.y,b.x,b.y)
-                }, coastEdges)
+                mapIndexed((path,idx) => {
+                    p.stroke(255-idx*50)
+                    p.drawIsoPath(R.map(v=>v.point,path))
+                }, map.coastPoints)
 
                 const rect = makeRect(32,32,256-32,256-32)
 
