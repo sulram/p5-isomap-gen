@@ -8,7 +8,7 @@ const generateMap = (width, height, random) => {
     const seed = 1 + Math.random() * 9999
     const map = mapModule({width, height});
     map.newIsland(islandShape.makeRadial(seed), 1);
-    map.go0PlacePoints(64, pointSelectorModule.generateRandom(width, height, random ? seed : map.mapRandom.seed));
+    map.go0PlacePoints(128, pointSelectorModule.generateRandom(width, height, random ? seed : map.mapRandom.seed));
     map.go1BuildGraph();
     map.assignBiomes();
     map.go2AssignElevations();
