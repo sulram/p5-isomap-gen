@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "p5": "^1.0.0",
+    "ramda": "^0.27.0",
+    "voronoi-map": "^0.0.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.6.0",
+    "babelify": "^10.0.0",
+    "budo": "^11.6.3",
+    "uglify-es": "^3.3.9"
+  },
+  "scripts": {
+    "build": "browserify src/idland.js -t babelify | uglifyjs -cm > js/idland.min.js",
+    "build2": "browserify src/idland.js -o js/idland.min.js",
+    "start": "budo src/idland.js:js/idland.min.js --dir . --live -- -t babelify"
+  }
+}
