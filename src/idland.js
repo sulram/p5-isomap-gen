@@ -1,4 +1,5 @@
 const R = require('ramda')
+const vec = require('vec-la')
 //const p5 = require('p5')
 
 const {generateMap, getCoastEdges} = require('./map')
@@ -14,10 +15,15 @@ const makeRect = (x,y,w,h) => {
     ]
 }
 
+const vecToFlat = point => [point.x,point.y]
+const vecFromFlat = point => ({x: point[0], y: point[1]})
+
 const sketch = (p) => {
 
     let map, maplast
     let myFont
+
+    let theta = 0
 
     p.preload = () => {
         myFont = p.loadFont('assets/input_mono_regular.ttf');
@@ -35,7 +41,7 @@ const sketch = (p) => {
 
         p.background(0)
 
-        p.angleMode(p.DEGREES)
+        // p.angleMode(p.DEGREES)
         p.ellipseMode(p.CENTER)
         
 
@@ -104,11 +110,14 @@ const sketch = (p) => {
 
                 p.noFill()
 
+                const rot = R.partialRight(vec.rotatePointAround, [[128,128], theta])
+                const f = R.pipe(vecToFlat, rot, vecFromFlat)
+
                 mapIndexed((path,idx) => {
                     p.stroke(255-idx*50)
-                    p.drawIsoPath(R.map(v=>v.point,path))
+                    p.drawIsoPath(R.map(v=>f(v.point), path))
                 }, map.coastPoints)
-
+                
                 const rect = makeRect(32,32,256-32,256-32)
 
                 // p.translate(0,-64)
@@ -120,7 +129,7 @@ const sketch = (p) => {
 
             p.pop()
 
-
+        theta += 0.005
     }
 
     p.windowResized = () => {

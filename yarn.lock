@@ -2676,6 +2676,11 @@ util@~0.10.1:
   dependencies:
     inherits "2.0.3"
 
+vec-la@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/vec-la/-/vec-la-1.5.0.tgz#cfedcac1028dad156c373dbb87e114b072d05cd8"
+  integrity sha512-XKjE9qYtOgpAS1xRMTqeII7oFdolanVqrzl2KngiH8xiExCdWDLOYDwSLKHkmXadbU+JSP9Poy0v+xmYlkxUAg==
+
 vecmath@^0.1.0:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/vecmath/-/vecmath-0.1.4.tgz#793806398768cc60ffc8b0ebfbd399425af97261"
