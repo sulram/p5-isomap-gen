@@ -34,12 +34,10 @@ const generateMap = (width, height, random) => {
 
 const findNextEdge = (edge,edges) => {
 
-    //console.log('findNextEdge', edge)
-
     const {idx,a,b} = {idx: edge.index, a: edge.v0, b: edge.v1}
 
     const filterEdges = R.filter(edge => edge.index !== idx, edges)
-    const filterEdge = R.find(edge => edge.v0.index == b.index || edge.v1.index == b.index, filterEdges)
+    const filterEdge = R.find(edge => edge.v0.index === b.index || edge.v1.index === b.index, filterEdges)
 
     if(filterEdge){
         const nextEdge = filterEdge.v0.index == b.index ? filterEdge : {...filterEdge, v0: filterEdge.v1, v1: filterEdge.v0}

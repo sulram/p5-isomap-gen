@@ -1,22 +1,11 @@
 const R = require('ramda')
-const vec = require('vec-la')
+
 //const p5 = require('p5')
 
-const {generateMap, getCoastEdges} = require('./map')
-const {isoFrom2D, isoFrom2DArray} = require('./isometric')
+const {generateMap} = require('./map')
+const f5 = require('./f5')
 
 const mapIndexed = R.addIndex(R.map)
-const makeRect = (x,y,w,h) => {
-    return [
-        {x,y},
-        {x: x+w, y},
-        {x: x+w, y: y+h},
-        {x, y: y+h}
-    ]
-}
-
-const vecToFlat = point => [point.x,point.y]
-const vecFromFlat = point => ({x: point[0], y: point[1]})
 
 const sketch = (p) => {
 
@@ -49,26 +38,19 @@ const sketch = (p) => {
 
     }
 
-    p.drawIsoPath = path => {
-        newPath = isoFrom2DArray(path)
+    p.drawIsoPath = (path, curved) => {
+        newPath = f5.isoFrom2DArray(path)
         p.beginShape()
-            R.map(pt => p.vertex(pt.x,pt.y), newPath)
+            R.map(pt => curved
+                ? p.curveVertex(pt.x,pt.y)
+                : p.vertex(pt.x,pt.y),
+            newPath)
         p.endShape(p.CLOSE)
     }
-
-    p.drawIsoCurve = path => {
-        newPath = isoFrom2DArray(path)
-        p.beginShape()
-            R.map(pt => p.curveVertex(pt.x,pt.y), newPath)
-        p.endShape(p.CLOSE)
-    }
-
 
     p.draw = () => {
 
         p.background(0)
-        
-        const coastEdges = getCoastEdges(map.edges)
 
         // DEBUG
 
@@ -110,18 +92,17 @@ const sketch = (p) => {
 
                 p.noFill()
 
-                const rot = R.partialRight(vec.rotatePointAround, [[128,128], theta])
-                const f = R.pipe(vecToFlat, rot, vecFromFlat)
+                const f = f5.rotPA([128,128],theta)
 
                 mapIndexed((path,idx) => {
                     p.stroke(255-idx*50)
                     p.drawIsoPath(R.map(v=>f(v.point), path))
                 }, map.coastPoints)
                 
-                const rect = makeRect(32,32,256-32,256-32)
+                const rect = f5.makeRect(32,32,256-32,256-32)
 
-                // p.translate(0,-64)
-                // p.drawIsoPath(rect)
+                p.translate(0,-64)
+                p.drawIsoPath(rect)
 
                 // p.translate(0,-64)
                 // p.drawIsoPath(rect)
