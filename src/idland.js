@@ -1,5 +1,4 @@
 const R = require('ramda')
-
 //const p5 = require('p5')
 
 const {generateMap} = require('./map')
@@ -7,11 +6,33 @@ const f5 = require('./f5')
 
 const mapIndexed = R.addIndex(R.map)
 
+
+const gui = new dat.GUI()
+
+let map, maplast
+
+let data = {
+    mapDebug: false,
+    mapPoints: 64,
+    rotationSpeed: 5,
+    generateMap: () => {
+        maplast = map
+        map = generateMap(256,256,data.mapPoints)
+    }
+}
+
+var f1 = gui.addFolder('Map Layer');
+f1.add(data, 'mapPoints', 16, 128, 16)
+f1.add(data, 'rotationSpeed', -100, 100)
+f1.add(data, 'mapDebug')
+f1.add(data, 'generateMap')
+f1.open()
+
+
 const sketch = (p) => {
 
-    let map, maplast
+    
     let myFont
-
     let theta = 0
 
     p.preload = () => {
@@ -34,7 +55,7 @@ const sketch = (p) => {
         p.ellipseMode(p.CENTER)
         
 
-        map = generateMap(256,256)
+        data.generateMap()
 
     }
 
@@ -52,6 +73,7 @@ const sketch = (p) => {
 
         p.background(0)
 
+        if(data.mapDebug){
         // DEBUG
 
             // poly
@@ -80,10 +102,8 @@ const sketch = (p) => {
                 const b = edge.v1.point
                 p.text(edge.v0.index,edge.v0.point.x,edge.v0.point.y)
                 p.text(edge.v1.index,edge.v1.point.x,edge.v1.point.y)
-                // if(edge.midpoint){
-                //     p.text(edge.index,edge.midpoint.x,edge.midpoint.y)
-                // }
             }, map.coastEdges)
+        }
 
         // ISOMETRIC
 
@@ -91,26 +111,22 @@ const sketch = (p) => {
             p.translate(p.windowWidth*0.5-0,p.windowHeight*0.5-128)
 
                 p.noFill()
+                p.stroke(255)
+
+                // const rect = f5.makeRect(0,0,256,256)
+                // p.drawIsoPath(rect)
 
                 const f = f5.rotPA([128,128],theta)
 
                 mapIndexed((path,idx) => {
                     p.stroke(255-idx*50)
-                    p.drawIsoPath(R.map(v=>f(v.point), path))
+                    const convertedPath = R.map(v=>f(v.point), path)
+                    p.drawIsoPath(convertedPath)
                 }, map.coastPoints)
-                
-                const rect = f5.makeRect(32,32,256-32,256-32)
-
-                p.translate(0,-64)
-                p.drawIsoPath(rect)
-
-                // p.translate(0,-64)
-                // p.drawIsoPath(rect)
-
 
             p.pop()
 
-        theta += 0.005
+        theta += data.rotationSpeed * 0.001
     }
 
     p.windowResized = () => {
@@ -125,8 +141,7 @@ const sketch = (p) => {
 
     p.touchEnded = () => {
 
-        maplast = map
-        map = generateMap(256,256)
+        
 
         console.log(map)
 
