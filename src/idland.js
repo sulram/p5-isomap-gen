@@ -11,11 +11,12 @@ let data = {
     mapDebug: false,
     mapDots: true,
     mapPoints: 64,
-    dotsDensity: 4,
+    dotsDensity: 7,
     rotationSpeed: 5,
     animationFrequency: 10,
     animationSpeed: 30,
-    dotSize: 4,
+    dotSize: 2,
+    dotY: 4,
     generateMap: () => {
         maplast = map
         map = generateMap(256, 256, data.mapPoints, data.dotsDensity)
@@ -27,6 +28,7 @@ f1.add(data, 'rotationSpeed', -100, 100)
 f1.add(data, 'animationSpeed', -100, 100)
 f1.add(data, 'animationFrequency', 1, 128)
 f1.add(data, 'dotSize', 0, 16)
+f1.add(data, 'dotY', 0, 32)
 f1.add(data, 'mapDots')
 f1.add(data, 'mapDebug')
 f1.add(data, 'mapPoints', 16, 128, 16)
@@ -121,11 +123,12 @@ const sketch = (p) => {
                     
                     const convertedPath = R.map(v=>f(v.point), path)
 
-                    if(!data.mapDots){
-                        p.stroke(255)
-                        p.noFill()
-                        p.drawIsoPath(convertedPath)
-                    } else {
+                    p.stroke(255,50)
+                    p.noFill()
+                    p.drawIsoPath(convertedPath)
+                    p.translate(0, -data.dotY)
+
+                    if(data.mapDots){
                         
                         p.fill(255)
                         p.noStroke()
