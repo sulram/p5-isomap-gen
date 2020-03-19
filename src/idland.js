@@ -3,37 +3,44 @@ const R = require('ramda')
 
 const {generateMap} = require('./map')
 const f5 = require('./f5')
-
-const mapIndexed = R.addIndex(R.map)
-
-
 const gui = new dat.GUI()
 
 let map, maplast
 
 let data = {
     mapDebug: false,
+    mapDots: true,
     mapPoints: 64,
+    dotsDensity: 4,
     rotationSpeed: 5,
+    animationFrequency: 10,
+    animationSpeed: 30,
+    dotSize: 4,
     generateMap: () => {
         maplast = map
-        map = generateMap(256,256,data.mapPoints)
+        map = generateMap(256, 256, data.mapPoints, data.dotsDensity)
     }
 }
 
 var f1 = gui.addFolder('Map Layer');
-f1.add(data, 'mapPoints', 16, 128, 16)
 f1.add(data, 'rotationSpeed', -100, 100)
+f1.add(data, 'animationSpeed', -100, 100)
+f1.add(data, 'animationFrequency', 1, 128)
+f1.add(data, 'dotSize', 0, 16)
+f1.add(data, 'mapDots')
 f1.add(data, 'mapDebug')
+f1.add(data, 'mapPoints', 16, 128, 16)
+f1.add(data, 'dotsDensity', 2, 10)
 f1.add(data, 'generateMap')
 f1.open()
 
-
 const sketch = (p) => {
-
     
     let myFont
-    let theta = 0
+    let thetaRot = 0
+    let thetaAni = 0
+
+    let n = 0
 
     p.preload = () => {
         myFont = p.loadFont('assets/input_mono_regular.ttf');
@@ -53,7 +60,6 @@ const sketch = (p) => {
 
         // p.angleMode(p.DEGREES)
         p.ellipseMode(p.CENTER)
-        
 
         data.generateMap()
 
@@ -73,14 +79,13 @@ const sketch = (p) => {
 
         p.background(0)
 
-        if(data.mapDebug){
         // DEBUG
+        if(data.mapDebug){
 
             // poly
             p.noStroke()
             p.fill(100)
-            mapIndexed( (poly,idx) => {
-                // p.text(idx,poly.point.x,poly.point.y+10)
+            R.map(poly => {
                 p.ellipse(poly.point.x,poly.point.y,3,3)
             }, map.centers)
 
@@ -110,23 +115,37 @@ const sketch = (p) => {
             p.push()
             p.translate(p.windowWidth*0.5-0,p.windowHeight*0.5-128)
 
-                p.noFill()
-                p.stroke(255)
+                const f = f5.rotPA([128,128],thetaRot)
 
-                // const rect = f5.makeRect(0,0,256,256)
-                // p.drawIsoPath(rect)
-
-                const f = f5.rotPA([128,128],theta)
-
-                mapIndexed((path,idx) => {
-                    p.stroke(255-idx*50)
+                R.map(path => {
+                    
                     const convertedPath = R.map(v=>f(v.point), path)
-                    p.drawIsoPath(convertedPath)
-                }, map.coastPoints)
+
+                    if(!data.mapDots){
+                        p.stroke(255)
+                        p.noFill()
+                        p.drawIsoPath(convertedPath)
+                    } else {
+                        
+                        p.fill(255)
+                        p.noStroke()
+                        const s = data.dotSize
+                        f5.mapIndexed((v,idx) => {
+                            const a = idx/path.length * Math.floor(path.length * data.animationFrequency/1280* p.PI) 
+                            const wave = p.sin(a+thetaAni)
+
+                            p.ellipse(v.x,v.y, s+s*wave,(s+s*wave)*0.5)
+                        }, f5.isoFrom2DArray(convertedPath))
+                    }
+
+                }, map.coastVertices)                
 
             p.pop()
 
-        theta += data.rotationSpeed * 0.001
+        thetaRot += data.rotationSpeed * 0.001
+        thetaAni += data.animationSpeed * 0.001
+
+        //console.log(n, map.coastPoints[0].length-3, map.coastPoints[0][n])
     }
 
     p.windowResized = () => {
@@ -141,9 +160,7 @@ const sketch = (p) => {
 
     p.touchEnded = () => {
 
-        
-
-        console.log(map)
+        // console.log(map)
 
     }
 

@@ -1,10 +1,11 @@
 const R = require('ramda')
+const vec = require('vec-la')
 
 const islandShape = require('voronoi-map/src/island-shape');
 const mapModule = require('voronoi-map/src/map');
 const pointSelectorModule = require('voronoi-map/src/point-selector');
 
-const generateMap = (width, height, points, random) => {
+const generateMap = (width, height, points, density, random) => {
 
     const seed = 1 + Math.random() * 9999
     const map = mapModule({width, height});
@@ -22,14 +23,35 @@ const generateMap = (width, height, points, random) => {
         return {index: edge.index, v0:edge.v0, v1:edge.v1}
     }, R.uniq(coastEdges)))
 
+    const coastVertices = subdivide(coastPoints, density)
 
     return {
         centers,
         corners,
         edges,
         coastEdges,
-        coastPoints
+        coastPoints,
+        coastVertices
     }
+}
+
+const subdivide = (vertexes,density) => {
+    return R.map(vtxgroup => {
+        let vtx = []
+        for(let i = 0; i < vtxgroup.length; i++){
+            let k = (i+1) % vtxgroup.length
+            const a = [vtxgroup[i].point.x,vtxgroup[i].point.y]
+            const b = [vtxgroup[k].point.x,vtxgroup[k].point.y]
+            const d = vec.dist(a,b)
+            const n = Math.floor(d/density)
+            vtx.push({vtx: a, point: {x: a[0], y: a[1]}})
+            for(let j = 1; j <= n; j++){
+                const c = vec.towards(a,b,j/n)
+                vtx.push({vtx: c, point: {x: c[0], y: c[1]}})
+            }
+        }
+        return vtx
+    }, vertexes)
 }
 
 const findNextEdge = (edge,edges) => {

@@ -41,6 +41,10 @@ const makeRect = (x,y,w,h) => {
     ]
 }
 
+// ramda
+
+const mapIndexed = R.addIndex(R.map)
+
 // exports
 
 module.exports = {
@@ -50,5 +54,6 @@ module.exports = {
     vecToFlat,
     vecFromFlat,
     rotPA,
-    makeRect
+    makeRect,
+    mapIndexed
 }
