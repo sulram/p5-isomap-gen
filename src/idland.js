@@ -1,7 +1,7 @@
 const R = require('ramda')
 //const p5 = require('p5')
 
-const {generateMap} = require('./map')
+const {generateMap, subdivide} = require('./map')
 const f5 = require('./f5')
 const gui = new dat.GUI()
 
@@ -25,14 +25,16 @@ let data = {
 
 var f1 = gui.addFolder('Map Layer');
 f1.add(data, 'rotationSpeed', -100, 100)
-f1.add(data, 'animationSpeed', -100, 100)
-f1.add(data, 'animationFrequency', 1, 128)
+f1.add(data, 'animationSpeed', -256, 256)
+f1.add(data, 'animationFrequency', 0, 128)
 f1.add(data, 'dotSize', 0, 16)
-f1.add(data, 'dotY', 0, 32)
+f1.add(data, 'dotY', 0, 64)
 f1.add(data, 'mapDots')
 f1.add(data, 'mapDebug')
 f1.add(data, 'mapPoints', 16, 128, 16)
-f1.add(data, 'dotsDensity', 2, 10)
+f1.add(data, 'dotsDensity', 1, 16).onChange(()=>{
+    map = {...map, coastVertices: subdivide(map.coastPoints, data.dotsDensity)}
+})
 f1.add(data, 'generateMap')
 f1.open()
 
@@ -134,12 +136,14 @@ const sketch = (p) => {
                         p.noStroke()
                         const s = data.dotSize
                         f5.mapIndexed((v,idx) => {
-                            const a = idx/path.length * Math.floor(path.length * data.animationFrequency/1280* p.PI) 
+                            const a = p.radians(idx * 360 / path.length * data.animationFrequency)
                             const wave = p.sin(a+thetaAni)
 
                             p.ellipse(v.x,v.y, s+s*wave,(s+s*wave)*0.5)
                         }, f5.isoFrom2DArray(convertedPath))
                     }
+
+                    p.translate(0, data.dotY)
 
                 }, map.coastVertices)                
 

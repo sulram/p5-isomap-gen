@@ -127,5 +127,5 @@ const getCoastEdges = edges => R.filter(e => {
 
 module.exports = {
     generateMap,
-    getCoastEdges
+    subdivide
 }
