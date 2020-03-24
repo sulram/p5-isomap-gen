@@ -11,12 +11,14 @@ let data = {
     mapDebug: false,
     mapDots: true,
     mapPoints: 64,
+    lineAlpha: 64,
     dotsDensity: 7,
     rotationSpeed: 5,
-    animationFrequency: 10,
+    wave: 1,
+    waveMult: 1,
     animationSpeed: 30,
-    dotSize: 2,
-    dotY: 4,
+    dotSize: 4,
+    dotY: 16,
     generateMap: () => {
         maplast = map
         map = generateMap(256, 256, data.mapPoints, data.dotsDensity)
@@ -26,9 +28,11 @@ let data = {
 var f1 = gui.addFolder('Map Layer');
 f1.add(data, 'rotationSpeed', -100, 100)
 f1.add(data, 'animationSpeed', -256, 256)
-f1.add(data, 'animationFrequency', 0, 128)
+f1.add(data, 'wave', 0, 8, 1)
+f1.add(data, 'waveMult', 1, 16, 1)
 f1.add(data, 'dotSize', 0, 16)
 f1.add(data, 'dotY', 0, 64)
+f1.add(data, 'lineAlpha', 0, 255)
 f1.add(data, 'mapDots')
 f1.add(data, 'mapDebug')
 f1.add(data, 'mapPoints', 16, 128, 16)
@@ -120,12 +124,14 @@ const sketch = (p) => {
             p.translate(p.windowWidth*0.5-0,p.windowHeight*0.5-128)
 
                 const f = f5.rotPA([128,128],thetaRot)
+                const size = data.dotSize
+                const freq = data.wave * data.waveMult
 
                 R.map(path => {
                     
                     const convertedPath = R.map(v=>f(v.point), path)
 
-                    p.stroke(255,50)
+                    p.stroke(data.lineAlpha)
                     p.noFill()
                     p.drawIsoPath(convertedPath)
                     p.translate(0, -data.dotY)
@@ -134,12 +140,11 @@ const sketch = (p) => {
                         
                         p.fill(255)
                         p.noStroke()
-                        const s = data.dotSize
+                        
                         f5.mapIndexed((v,idx) => {
-                            const a = p.radians(idx * 360 / path.length * data.animationFrequency)
-                            const wave = p.sin(a+thetaAni)
-
-                            p.ellipse(v.x,v.y, s+s*wave,(s+s*wave)*0.5)
+                            const a = p.radians(idx * 360 / path.length * freq)
+                            const dotSize = size + size * p.sin(a + thetaAni)
+                            p.ellipse(v.x,v.y, dotSize, dotSize * 0.5)
                         }, f5.isoFrom2DArray(convertedPath))
                     }
 
